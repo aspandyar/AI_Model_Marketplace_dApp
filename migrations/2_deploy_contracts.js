@@ -1,4 +1,4 @@
-const AIModelMarketplace = artifacts.require("AIModelMarketplace");
+const AIModelMarketplace = artifacts.require("AImodelMarketplace");
 
 module.exports = async function (deployer, network, accounts) {
   const creatorAccount = accounts[0];  // The account deploying the contract

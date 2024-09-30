@@ -42,14 +42,11 @@ contract AImodelMarketplace {
         emit ModelListed(modelId, name, msg.sender, price);
     }
 
-      // Function to purchase a model
     function purchaseModel(uint256 modelId) public payable {
         require(modelId < models.length, "Model does not exist");
         Model storage model = models[modelId];
         require(msg.value == model.price, "Incorrect amount sent");
         require(model.creator != msg.sender, "Cannot purchase your own model");
-
-        // Instead of transferring funds directly to the creator, the Ether stays in the contract
 
         model.buyers.push(msg.sender);  // Store buyer's address
         emit ModelPurchased(modelId, msg.sender);
