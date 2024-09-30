@@ -20,12 +20,6 @@ const ModelDetails = ({ modelId }) => {
     <div>
       {details && (
         <div>
-          <h4>Details</h4>
-          <p>Name: {details.name}</p>
-          <p>Description: {details.description}</p>
-          <p>Price: {details.price} wei</p>
-          <p>Creator: {details.creator}</p>
-          <p>Average Rating: {details.averageRating}</p>
           <RateModelForm modelId={modelId} />
         </div>
       )}

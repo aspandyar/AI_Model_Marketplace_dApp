@@ -13,17 +13,22 @@ const Web3Provider = ({ children }) => {
   useEffect(() => {
     const initWeb3 = async () => {
       try {
-        const web3Instance = new Web3(window.ethereum);
+        let web3Instance;
+        if (window.ethereum) {
+          web3Instance = new Web3(window.ethereum);
+          await window.ethereum.enable();
+        } else if (window.web3) {
+          web3Instance = new Web3(window.web3.currentProvider);
+        } else {
+          web3Instance = new Web3('http://127.0.0.1:7545');
+        }
         setWeb3(web3Instance);
 
         const accounts = await web3Instance.eth.requestAccounts();
         setAccount(accounts[0]);
 
         const networkId = await web3Instance.eth.net.getId();
-        console.log('Network ID:', networkId);
-
-        const deployedNetwork = AIModelMarketplaceABI.networks[5777];
-        console.log('Deployed Network:', deployedNetwork);
+        const deployedNetwork = AIModelMarketplaceABI.networks[networkId];
 
         if (deployedNetwork) {
           const contractInstance = new web3Instance.eth.Contract(
