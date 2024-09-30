@@ -57,6 +57,7 @@ contract AImodelMarketplace {
         require(modelId < models.length, "Model does not exist");
         Model storage model = models[modelId];
 
+        require(rating >= 1 && rating <= 5, "Rating must be between 1 and 5");
         require(model.creator != msg.sender, "Model creator cannot rate their own model");
 
         model.ratingCount++;
@@ -64,6 +65,7 @@ contract AImodelMarketplace {
 
         emit ModelRated(modelId, rating, msg.sender);
     }
+
 
     // Function to withdraw funds
     function withdrawFunds() public {
@@ -87,6 +89,6 @@ contract AImodelMarketplace {
 
     // Function to get the total number of models
     function totalModels() public view returns (uint256) {
-        return models.length;
+        return models.length;   
     }
 }
