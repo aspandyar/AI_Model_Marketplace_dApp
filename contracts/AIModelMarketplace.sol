@@ -52,8 +52,6 @@ contract AImodelMarketplace {
         emit ModelPurchased(modelId, msg.sender);
     }
 
-    
-
     // Function to rate a model
     function rateModel(uint256 modelId, uint8 rating) public {
         require(modelId < models.length, "Model does not exist");
@@ -85,5 +83,10 @@ contract AImodelMarketplace {
         uint256 averageRating = model.ratingCount > 0 ? model.totalRating / model.ratingCount : 0;
 
         return (model.name, model.description, model.price, model.creator, averageRating, model.buyers);
+    }
+
+    // Function to get the total number of models
+    function totalModels() public view returns (uint256) {
+        return models.length;
     }
 }
