@@ -24,7 +24,7 @@ const RateModelForm = ({ modelId }) => {
   };
 
   return (
-    <Form onSubmit={handleSubmit} className="my-3">
+    <Form onSubmit={handleSubmit} className="my-4 p-3 border rounded shadow-sm bg-light">
       <Form.Group controlId="rating">
         <Form.Label>Rate Model (1-5)</Form.Label>
         <Form.Control
@@ -33,9 +33,12 @@ const RateModelForm = ({ modelId }) => {
           value={rating}
           onChange={(e) => setRating(e.target.value)}
           required
+          min={1}
+          max={5}
+          className="mb-3" // Adds margin below the input field
         />
       </Form.Group>
-      <Button variant="primary" type="submit">
+      <Button variant="primary" type="submit" className="w-100">
         Rate Model
       </Button>
       {error && <Alert variant="danger" className="mt-2">{error}</Alert>}

@@ -19,56 +19,57 @@ const ModelList = () => {
   // Function to fetch models
   const fetchModels = async () => {
     if (!contract) {
-        console.log('Contract not yet initialized, returning early.');
-        return;
+      console.log('Contract not yet initialized, returning early.');
+      return;
     }
 
     setLoading(true);
 
     try {
-        const totalModelsBigInt = await contract.methods.totalModels().call();
-        const totalModels = Number(totalModelsBigInt); 
+      const totalModelsBigInt = await contract.methods.totalModels().call();
+      const totalModels = Number(totalModelsBigInt);
 
-        console.log(totalModels);
+      const modelsArray = await Promise.all(
+        Array.from({ length: totalModels }, async (_, i) => {
+          try {
+            return await contract.methods.getModelDetails(i).call({ gas: 3000000 });
+          } catch (innerErr) {
+            console.error(`Error fetching model details for index ${i}:`, innerErr);
+            return null;
+          }
+        })
+      );
 
-        const modelsArray = await Promise.all(
-            Array.from({ length: totalModels }, async (_, i) => {
-                console.log('Fetching model details for index:', i);
-                try {
-                    return await contract.methods.getModelDetails(i).call({ gas: 3000000 });
-                } catch (innerErr) {
-                    console.error(`Error fetching model details for index ${i}:`, innerErr);
-                    return null;
-                }
-            })
-        );  
+      const validModels = modelsArray.filter(model => model !== null);
 
-        const validModels = modelsArray.filter(model => model !== null);
+      // Format models to include relevant data
+      const formattedModels = validModels.map((model) => {
+        const priceInEther = model[2] ? web3.utils.fromWei(model[2].toString(), 'ether') : 'N/A'; // Convert price from Wei to Ether
+        const averageRating = model[4]; // Average rating
+        const buyers = model[5]; // List of buyers
 
-        // Convert prices from wei to ether and store in modelsArray
-        const formattedModels = validModels.map((model) => {
-            console.log('Model details fetched:', model); // Log the model details
-            const priceInEther = model.price ? web3.utils.fromWei(model.price.toString(), 'ether') : 'N/A'; // Handle undefined price
+        return {
+          name: model[0],
+          description: model[1],
+          price: priceInEther,
+          creator: model[3],
+          averageRating: averageRating,
+          buyers: buyers,
+        };
+      });
 
-            return {
-                ...model,
-                price: priceInEther, 
-            };
-        });
-
-        setModels(formattedModels);
+      setModels(formattedModels);
     } catch (err) {
-        console.error('Error fetching total models:', err);
-        setError('Error fetching models: ' + err.message);
+      console.error('Error fetching total models:', err);
+      setError('Error fetching models: ' + err.message);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
-
   useEffect(() => {
-    fetchModels(); // Call fetchModels when the component mounts or when contract changes
-  }, [contract]);
+    fetchModels();
+  }, [contract, account]);
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent the default form submission
@@ -95,19 +96,27 @@ const ModelList = () => {
   if (error) {
     return <div>Error: {error}</div>;
   }
+
   return (
     <Container>
-      <h2 className="my-4">Available Models</h2>
+      <h2 className="my-4 text-center text-primary">Available Models</h2>
+
       {loading && <Spinner animation="border" role="status"><span className="sr-only">Loading...</span></Spinner>}
       {error && <Alert variant="danger">{error}</Alert>}
-      <Row>
+
+      <Row className="justify-content-center">
         {models.map((model, index) => (
           <Col key={index} md={4} className="mb-4">
-            <Card>
+            <Card border="primary" className="shadow-sm rounded">
               <Card.Body>
-                <Card.Title>Name: {model[0]}</Card.Title>
-                <Card.Text>Description: {model[1]}</Card.Text>
-                <Card.Text>Price: {model[2]} ETH</Card.Text>
+                <Card.Title className="text-primary">{model.name}</Card.Title>
+                <Card.Text>{model.description}</Card.Text>
+                <Card.Text className="font-weight-bold">Price: {model.price} ETH</Card.Text>
+                <Card.Text>Creator: {model.creator}</Card.Text>
+                <Card.Text>Average Rating: {model.averageRating}</Card.Text>
+                <Card.Text>
+                  Buyers: {model.buyers.length > 0 ? model.buyers.join(', ') : 'No buyers yet'}
+                </Card.Text>
                 <ModelDetails modelId={index} />
                 <PurchaseModelButton modelId={index} />
               </Card.Body>
@@ -115,8 +124,9 @@ const ModelList = () => {
           </Col>
         ))}
       </Row>
-      <h3 className="my-4">List a New Model</h3>
-      <Form onSubmit={handleSubmit}>
+
+      <h3 className="my-4 text-center text-primary">List a New Model</h3>
+      <Form onSubmit={handleSubmit} className="mb-4">
         <Form.Group controlId="formModelName">
           <Form.Label>Model Name</Form.Label>
           <Form.Control
@@ -125,6 +135,7 @@ const ModelList = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
+            className="border-primary"
           />
         </Form.Group>
         <Form.Group controlId="formDescription">
@@ -135,6 +146,7 @@ const ModelList = () => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             required
+            className="border-primary"
           />
         </Form.Group>
         <Form.Group controlId="formPrice">
@@ -145,9 +157,10 @@ const ModelList = () => {
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             required
+            className="border-primary"
           />
         </Form.Group>
-        <Button variant="primary" type="submit">
+        <Button variant="primary" type="submit" className="w-100 mt-3">
           List Model
         </Button>
       </Form>
