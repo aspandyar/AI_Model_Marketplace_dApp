@@ -8,6 +8,7 @@ contract AImodelMarketplace {
         uint256 price;
         address payable creator;
         address[] buyers; // Store buyers' addresses
+        mapping(address => bool) hasPurchased; // Track if the address has purchased the model
         uint8 ratingCount;
         uint256 totalRating;
     }
@@ -25,10 +26,12 @@ contract AImodelMarketplace {
     }
 
     // Function to list a new AI model
-    function listModel(string memory name, string memory description, uint256 price) public {
+    function listModel(string memory name, string memory description, uint256 price) public payable {
         require(price > 0, "Price must be greater than zero");
+        require(msg.value == price, "You must send the exact amount of Ether equal to the price");
 
         uint256 modelId = models.length;
+
         models.push(Model({
             name: name,
             description: description,
@@ -47,8 +50,12 @@ contract AImodelMarketplace {
         Model storage model = models[modelId];
         require(msg.value == model.price, "Incorrect amount sent");
         require(model.creator != msg.sender, "Cannot purchase your own model");
+        require(!model.hasPurchased[msg.sender], "You have already purchased this model");
 
-        model.buyers.push(msg.sender);  // Store buyer's address
+        model.creator.transfer(msg.value); // Transfer the amount to the creator
+        model.buyers.push(msg.sender); // Store buyer's address
+        model.hasPurchased[msg.sender] = true; // Mark as purchased
+
         emit ModelPurchased(modelId, msg.sender);
     }
 
@@ -66,8 +73,7 @@ contract AImodelMarketplace {
         emit ModelRated(modelId, rating, msg.sender);
     }
 
-
-    // Function to withdraw funds
+    // Function to withdraw funds from the contract
     function withdrawFunds() public {
         require(msg.sender == owner, "Only the owner can withdraw funds");
         uint256 balance = address(this).balance;
@@ -76,7 +82,7 @@ contract AImodelMarketplace {
         // Transfer the contract balance to the owner
         payable(msg.sender).transfer(balance);
         emit FundsWithdrawn(msg.sender, balance);
-    }  
+    }
 
     // Function to get model details
     function getModelDetails(uint256 modelId) public view returns (string memory, string memory, uint256, address, uint256, address[] memory) {

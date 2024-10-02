@@ -1,72 +1,75 @@
-import React, { useState, useContext } from 'react';
-import { Web3Context } from '../context/Web3Context';
-import { Form, Button, Card, Container } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Form, Button, Alert } from 'react-bootstrap';
+import Web3 from 'web3';
 
-const ListModelForm = () => {
+const ListModel = ({ contract, account, fetchModels }) => {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
-  const { contract } = useContext(Web3Context);
+  const [error, setError] = useState(null);
+  const web3 = new Web3(); // Initialize Web3 if needed
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    await contract.methods.listModel(name, description, price).send({ from: contract.address });
-    setName('');
-    setDescription('');
-    setPrice('');
+    e.preventDefault(); // Prevent the default form submission
+
+    try {
+      const priceInWei = web3.utils.toWei(price, 'ether');
+      await contract.methods.listModel(name, description, priceInWei).send({ from: account });
+
+      // Clear form fields
+      setName('');
+      setDescription('');
+      setPrice('');
+
+      // Fetch updated model list
+      fetchModels();
+    } catch (err) {
+      console.error('Error listing model:', err);
+      setError('Error listing model: ' + err.message);
+    }
   };
 
   return (
-    <Container className='m-5'>
-      <Card className="mx-auto my-4">
-        <Card.Body>
-          <h4 className="text-center mb-3">List a New Model</h4>
-          <Form onSubmit={handleSubmit}>
-            <div className="border" style>
-              <Form.Group controlId="formModelName">
-                <Form.Label>Model Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter model name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </Form.Group>
-            </div>
-            <div className="border">
-              <Form.Group controlId="formModelDescription">
-                <Form.Label>Description</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Enter description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  required
-                />
-              </Form.Group>
-            </div>
-            <div className="border">
-              <Form.Group controlId="formModelPrice">
-                <Form.Label>Price (in wei)</Form.Label>
-                <Form.Control
-                  type="number"
-                  placeholder="Enter price"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                  required
-                />
-              </Form.Group>
-            </div>
-            <Button variant="primary" type="submit" className="w-100">
-              List Model
-            </Button>
-          </Form>
-        </Card.Body>
-      </Card>
-    </Container>
+    <>
+      {error && <Alert variant="danger">{error}</Alert>}
+      <h3 className="my-4">List a New Model</h3>
+      <Form onSubmit={handleSubmit} className='border border-3 border-primary rounded-4 p-4 my-5'>
+        <Form.Group controlId="formModelName">
+          <Form.Label>Model Name</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter model name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
+        </Form.Group>
+        <Form.Group controlId="formDescription">
+          <Form.Label>Description</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder="Enter description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+          />
+        </Form.Group>
+        <Form.Group controlId="formPrice">
+          <Form.Label>Price (in ETH)</Form.Label>
+          <Form.Control
+            type="number"
+            placeholder="Enter price in ETH"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            required
+          />
+        </Form.Group>
+        <Button className='my-4' variant="primary" type="submit">
+          List Model
+        </Button>
+      </Form>
+    </>
   );
 };
 
-export default ListModelForm;
-
+export default ListModel;
