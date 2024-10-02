@@ -127,7 +127,7 @@ const ModelList = () => {
       </Row>
 
       {/* Move the List Model form to the ListModel component */}
-      <ListModel contract={contract} account={account} fetchModels={fetchModels} />
+      <ListModel contract={contract} account={account} fetchModels={fetchModels}/>
 
       {selectedModel && (
         <Modal show={showModal} onHide={handleCloseModal}>

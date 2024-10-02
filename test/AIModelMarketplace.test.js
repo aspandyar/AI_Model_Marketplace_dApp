@@ -10,7 +10,7 @@ contract("AImodelMarketplace", (accounts) => {
 
     describe("Listing Models", () => {
         it("should list a new model", async () => {
-            await marketplace.listModel("Model1", "Description1", web3.utils.toWei("1", "ether"), { from: owner });
+            await marketplace.listModel("Model1", "Description1", web3.utils.toWei("1", "ether"), { from: owner, value: web3.utils.toWei("1", "ether") });
             
             const model = await marketplace.models(0);
             assert.equal(model.name, "Model1");

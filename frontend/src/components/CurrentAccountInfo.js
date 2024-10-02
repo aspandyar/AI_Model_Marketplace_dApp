@@ -28,13 +28,11 @@ const CurrentAccountInfo = () => {
             setBalanceError('Error fetching balance. Please check your connection or account status.');
           }
 
-          // Check for ENS name (Ethereum Name Service)
           try {
             const ensName = await web3.eth.ens.getName(account);
             setAccountName(ensName?.name); // Set to undefined if name is not found
           } catch (err) {
             console.error('ENS name fetch error:', err);
-            // Ignore error and keep accountName as undefined
           }
         }
       } catch (err) {

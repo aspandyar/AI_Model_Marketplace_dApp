@@ -25,6 +25,9 @@ contract AImodelMarketplace {
         owner = msg.sender; // Set the contract creator as the owner
     }
 
+    // Receive function to accept Ether
+    receive() external payable {}
+
     // Function to list a new AI model
     function listModel(string memory name, string memory description, uint256 price) public payable {
         require(price > 0, "Price must be greater than zero");

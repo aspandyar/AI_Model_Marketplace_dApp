@@ -14,11 +14,26 @@ const Web3Provider = ({ children }) => {
     const initWeb3 = async () => {
       try {
         let web3Instance;
-        
+
         // Check for MetaMask or existing provider
         if (window.ethereum) {
           web3Instance = new Web3(window.ethereum);
           await window.ethereum.request({ method: 'eth_requestAccounts' });
+          
+          // Listen for account changes
+          window.ethereum.on('accountsChanged', (accounts) => {
+            if (accounts.length > 0) {
+              setAccount(accounts[0]);
+            } else {
+              setError('No accounts found. Please check MetaMask.');
+            }
+          });
+
+          // Listen for network changes
+          window.ethereum.on('chainChanged', (chainId) => {
+            window.location.reload();
+          });
+
         } else if (window.web3) {
           web3Instance = new Web3(window.web3.currentProvider);
         } else {
@@ -46,8 +61,11 @@ const Web3Provider = ({ children }) => {
             AIModelMarketplaceABI.abi,
             deployedNetwork.address,
           );
+
           setContract(contractInstance);
         } else {
+          // console.log(AIModelMarketplaceABI.abi)
+          console.log(deployedNetwork.address)
           setError('Contract not deployed on this network.');
           console.error('No contract deployed on this network');
         }
@@ -64,6 +82,7 @@ const Web3Provider = ({ children }) => {
   return (
     <Web3Context.Provider value={{ web3, account, contract, error }}>
       {children}
+      {error && <div className="error-message">{error}</div>}
     </Web3Context.Provider>
   );
 };

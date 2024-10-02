@@ -9,13 +9,18 @@ const RateModelForm = ({ modelId }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (rating < 1 || rating > 5) {
+
+    // Check rating value
+    const numericRating = Number(rating);
+    if (numericRating < 1 || numericRating > 5) {
       setError('Rating must be between 1 and 5');
       return;
     }
+
     try {
-      await contract.methods.rateModel(modelId, rating).send({ from: account });
-      setRating('');
+      // Ensure numericRating is sent as a number
+      await contract.methods.rateModel(modelId, numericRating).send({ from: account });
+      setRating(''); // Clear input after submission
       setError(null); // Clear error on successful submission
     } catch (err) {
       console.error(err); // Log the full error to the console
