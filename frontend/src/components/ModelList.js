@@ -1,7 +1,6 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useCallback } from 'react';
 import { Web3Context } from '../context/Web3Context';
 import PurchaseModelButton from './PurchaseModelButton';
-import ModelDetails from './ModelDetails';
 import Web3 from 'web3';
 import { Container, Row, Col, Card, Button, Spinner, Alert, Modal } from 'react-bootstrap';
 import RateModelForm from './RateModelForm';
@@ -16,7 +15,7 @@ const ModelList = () => {
   const [selectedModel, setSelectedModel] = useState(null);
   const web3 = new Web3();
 
-  const fetchModels = async () => {
+  const fetchModels = useCallback(async () => {
     if (!contract) {
       console.log('Contract not yet initialized, returning early.');
       return;
@@ -43,7 +42,7 @@ const ModelList = () => {
 
       const formattedModels = validModels.map((model) => {
         const priceInEther = model[2] ? web3.utils.fromWei(model[2].toString(), 'ether') : 'N/A';
-        const averageRating = model[4];
+        const averageRating = model[4] ? (Number(model[4]) / 100).toFixed(2) : 'No rating yet'; // Convert back to float for display          
         const buyers = model[5];
 
         return {
@@ -63,11 +62,11 @@ const ModelList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [contract, web3.utils]);
 
   useEffect(() => {
     fetchModels();
-  }, [contract, account]);
+  }, [fetchModels]);
 
   const handleOpenModal = (model) => {
     setSelectedModel(model);
@@ -100,31 +99,29 @@ const ModelList = () => {
             <Card>
               <Card.Body>
                 <Card.Title>
-                  Name: <div className='fw-bold'>{model.name}</div>
+                  Name: <span className="fw-bold">{model.name}</span>
                 </Card.Title>
-                <Card.Text>Description: 
-                  <div className='fw-bold'>{model.description}</div>
-                  </Card.Text>
-                <Card.Text>Price: 
-                  <div className='fw-bold'>{model.price} ETH</div>
-                  </Card.Text>
-                  <Card.Text>
-                    Average Rating: 
-                    <div className="fw-bold">
-                      {model.averageRating && model.averageRating !== '0' ? model.averageRating : 'No rating yet'}
-                    </div>
-                  </Card.Text>
+                <Card.Text>
+                  Description: <span className="fw-bold">{model.description}</span>
+                </Card.Text>
+                <Card.Text>
+                  Price: <span className="fw-bold">{model.price} ETH</span>
+                </Card.Text>
+                <Card.Text>
+                  Average Rating: <span className="fw-bold">{model.averageRating && model.averageRating !== '0' ? model.averageRating : 'No rating yet'}</span>
+                </Card.Text>
 
                 <Button variant="info" onClick={() => handleOpenModal(model)}>
                   View Details
                 </Button>
-                <RateModelForm></RateModelForm>
+                <RateModelForm modelId={index} fetchModels={fetchModels} /> {/* Pass fetchModels as a prop */}
                 <PurchaseModelButton modelId={index} />
               </Card.Body>
             </Card>
           </Col>
         ))}
       </Row>
+
 
       {/* Move the List Model form to the ListModel component */}
       <ListModel contract={contract} account={account} fetchModels={fetchModels}/>
@@ -135,11 +132,11 @@ const ModelList = () => {
             <Modal.Title>Model Details: {selectedModel.name}</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <p><strong>Description:</strong> {selectedModel.description}</p>
-            <p><strong>Price:</strong> {selectedModel.price} ETH</p>
-            <p><strong>Creator:</strong> {selectedModel.creator}</p>
-            <p><strong>Average Rating:</strong> {selectedModel.averageRating}</p>
-            <p><strong>Buyers:</strong> {selectedModel.buyers.length > 0 ? selectedModel.buyers.join(', ') : 'No buyers yet'}</p>
+            <div><strong>Description:</strong> {selectedModel.description}</div>
+            <div><strong>Price:</strong> {selectedModel.price} ETH</div>
+            <div><strong>Creator:</strong> {selectedModel.creator}</div>
+            <div><strong>Average Rating:</strong> {selectedModel.averageRating}</div>
+            <div><strong>Buyers:</strong> {selectedModel.buyers.length > 0 ? selectedModel.buyers.join(', ') : 'No buyers yet'}</div>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal}>

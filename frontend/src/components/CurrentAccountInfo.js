@@ -32,7 +32,7 @@ const CurrentAccountInfo = () => {
             const ensName = await web3.eth.ens.getName(account);
             setAccountName(ensName?.name); // Set to undefined if name is not found
           } catch (err) {
-            console.error('ENS name fetch error:', err);
+            console.log('ENS name fetch error:', err.message);
           }
         }
       } catch (err) {

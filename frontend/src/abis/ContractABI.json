@@ -84,9 +84,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint8",
-        "name": "rating",
-        "type": "uint8"
+        "internalType": "uint256",
+        "name": "averageRating",
+        "type": "uint256"
       },
       {
         "indexed": false,
@@ -217,6 +217,26 @@
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "modelId",
+        "type": "uint256"
+      }
+    ],
+    "name": "getAverageRating",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function",
+    "constant": true
   },
   {
     "inputs": [],

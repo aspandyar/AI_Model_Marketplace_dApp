@@ -2,7 +2,7 @@ import React, { useState, useContext } from 'react';
 import { Web3Context } from '../context/Web3Context';
 import { Alert, Form, Button } from 'react-bootstrap';
 
-const RateModelForm = ({ modelId }) => {
+const RateModelForm = ({ modelId, fetchModels }) => {
   const [rating, setRating] = useState('');
   const [error, setError] = useState(null);
   const { contract, account } = useContext(Web3Context);
@@ -17,11 +17,18 @@ const RateModelForm = ({ modelId }) => {
       return;
     }
 
+    const numericModelId = parseInt(modelId, 10);
+
+    if (isNaN(numericModelId)) {
+      setError('Model ID is invalid');
+      return;
+    }
+
     try {
-      // Ensure numericRating is sent as a number
       await contract.methods.rateModel(modelId, numericRating).send({ from: account });
       setRating(''); // Clear input after submission
       setError(null); // Clear error on successful submission
+      fetchModels(); // Refresh the model list after a successful rating submission
     } catch (err) {
       console.error(err); // Log the full error to the console
       setError('Failed to submit rating: ' + (err.message || 'Unknown error'));
@@ -40,7 +47,7 @@ const RateModelForm = ({ modelId }) => {
           required
           min={1}
           max={5}
-          className="mb-3" // Adds margin below the input field
+          className="mb-3"
         />
       </Form.Group>
       <Button variant="primary" type="submit" className="w-100">

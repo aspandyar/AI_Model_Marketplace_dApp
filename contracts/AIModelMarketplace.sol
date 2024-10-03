@@ -10,7 +10,7 @@ contract AImodelMarketplace {
         address[] buyers; // Store buyers' addresses
         mapping(address => bool) hasPurchased; // Track if the address has purchased the model
         uint8 ratingCount;
-        uint256 totalRating;
+        uint256 totalRating; // Using totalRating to manage float-like behavior
     }
 
     Model[] public models;
@@ -18,7 +18,7 @@ contract AImodelMarketplace {
 
     event ModelListed(uint256 modelId, string name, address creator, uint256 price);
     event ModelPurchased(uint256 modelId, address buyer);
-    event ModelRated(uint256 modelId, uint8 rating, address rater);
+    event ModelRated(uint256 modelId, uint256 averageRating, address rater); // Change to uint256 for average rating
     event FundsWithdrawn(address owner, uint256 amount);
 
     constructor() public {
@@ -71,9 +71,15 @@ contract AImodelMarketplace {
         require(model.creator != msg.sender, "Model creator cannot rate their own model");
 
         model.ratingCount++;
-        model.totalRating += rating;
+        model.totalRating += rating * 100; // Scale rating by 100 for two decimal precision
 
-        emit ModelRated(modelId, rating, msg.sender);
+        emit ModelRated(modelId, getAverageRating(modelId), msg.sender);
+    }
+
+    // Function to calculate average rating
+    function getAverageRating(uint256 modelId) public view returns (uint256) {
+        Model storage model = models[modelId];
+        return model.ratingCount > 0 ? model.totalRating / model.ratingCount : 0; // Returns average as a scaled uint256
     }
 
     // Function to withdraw funds from the contract
@@ -91,7 +97,7 @@ contract AImodelMarketplace {
     function getModelDetails(uint256 modelId) public view returns (string memory, string memory, uint256, address, uint256, address[] memory) {
         require(modelId < models.length, "Model does not exist");
         Model storage model = models[modelId];
-        uint256 averageRating = model.ratingCount > 0 ? model.totalRating / model.ratingCount : 0;
+        uint256 averageRating = getAverageRating(modelId); // Get average rating
 
         return (model.name, model.description, model.price, model.creator, averageRating, model.buyers);
     }

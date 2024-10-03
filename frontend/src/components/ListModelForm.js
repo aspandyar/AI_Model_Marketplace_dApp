@@ -17,7 +17,6 @@ const ListModel = ({ contract, account, fetchModels }) => {
       try {
         const receipt = await contract.methods.listModel(name, description, price)
           .send({ from: account, value: price });
-        console.log("Model listed successfully:", receipt);
       } catch (error) {
           console.error("Error listing model:", error);
       }
