@@ -59,10 +59,10 @@ const ListModel = ({ contract, account, fetchModels }) => {
           />
         </Form.Group>
         <Form.Group controlId="formPrice">
-          <Form.Label>Price (in ETH)</Form.Label>
+          <Form.Label>Price (in WEI)</Form.Label>
           <Form.Control
             type="number"
-            placeholder="Enter price in ETH"
+            placeholder="Enter price in WEI"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
             required
